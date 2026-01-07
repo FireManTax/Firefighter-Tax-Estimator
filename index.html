@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Payroll & Income Tax Estimator (Transparent)</title>
+<title>Firefighter Income Tax Estimator</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
@@ -60,8 +60,10 @@ input, select {
 <body>
 <div class="container">
 
-<h1>Payroll & Income Tax Estimator</h1>
-<p style="text-align:center">Transparent, educational payroll breakdown</p>
+<h1>Firefighter Income Tax Estimator</h1>
+<p style="text-align:center">
+Transparent paycheck & tax breakdown for firefighters
+</p>
 
 <!-- STATE -->
 <div class="section">
@@ -114,64 +116,5 @@ input, select {
 <!-- TAXES -->
 <div class="section">
 <h2>Taxes Withheld <span class="badge tax">Taxes</span></h2>
-<p>Federal Income Tax: $<span id="fedTax">0.00</span></p>
-<p>State Income Tax: $<span id="stateTax">0.00</span></p>
-<p>Medicare (1.45%): $<span id="medicare">0.00</span></p>
-<p>Unemployment: $<span id="unemployment">0.00</span></p>
-</div>
+<p>Federal Inco
 
-<!-- NET -->
-<div class="section">
-<h2>Net Pay</h2>
-<div class="total">Take-Home Pay: $<span id="netPay">0.00</span></div>
-</div>
-
-<div class="footer">
-<p>
-Estimates only. Not tax or legal advice.<br>
-Version 1.0 — Educational Payroll Transparency Tool
-</p>
-</div>
-
-</div>
-
-<script>
-function num(id){ return parseFloat(document.getElementById(id).value) || 0; }
-
-function calculate(){
-  const gross = num("basePay")+num("overtimePay")+num("flsaPay");
-  const pretax =
-    num("401a")+num("457")+num("fppa")+num("health")+
-    num("vision")+num("dental")+num("life")+num("ltd")+num("std");
-
-  const fedTaxable = Math.max(0, gross - pretax - 13850); // standard deduction example
-  const fedTax = fedTaxable * 0.12; // simplified federal rate example
-
-  const medicare = gross * 0.0145;
-  const unemployment = gross * 0.005;
-
-  let stateTax = 0;
-  if(document.getElementById("state").value === "flat5"){
-    const stateDeductions = num("uniforms")+num("laundry")+num("cell");
-    stateTax = Math.max(0, gross - pretax - stateDeductions) * 0.05;
-  }
-
-  const postTax = num("union")+num("loan");
-  const net = gross - pretax - fedTax - stateTax - medicare - unemployment - postTax;
-
-  document.getElementById("grossPay").textContent = gross.toFixed(2);
-  document.getElementById("pretaxTotal").textContent = pretax.toFixed(2);
-  document.getElementById("fedTax").textContent = fedTax.toFixed(2);
-  document.getElementById("stateTax").textContent = stateTax.toFixed(2);
-  document.getElementById("medicare").textContent = medicare.toFixed(2);
-  document.getElementById("unemployment").textContent = unemployment.toFixed(2);
-  document.getElementById("netPay").textContent = net.toFixed(2);
-}
-
-document.querySelectorAll("input, select").forEach(el=>{
-  el.addEventListener("input", calculate);
-});
-</script>
-
-</body>
-</html>
