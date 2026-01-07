@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Payroll & Income Tax Estimator (Transparent)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body {
+  font-family: Arial, sans-serif;
+  background: #f4f6f8;
+  margin: 0;
+  padding: 20px;
+}
+h1, h2 {
+  text-align: center;
+}
+.container {
+  max-width: 900px;
+  margin: auto;
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+}
+.section {
+  margin-bottom: 30px;
+}
+label {
+  display: flex;
+  justify-content: space-between;
+  margin: 6px 0;
+}
+input, select {
+  width: 180px;
+}
+.total {
+  font-weight: bold;
+  border-top: 1px solid #ccc;
+  padding-top: 8px;
+  margin-top: 8px;
+}
+.footer {
+  font-size: 0.85em;
+  color: #666;
+  text-align: center;
+  margin-top: 40px;
+}
+.badge {
+  font-size: 0.75em;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+.pre { background:#d4edda; }
+.state { background:#fff3cd; }
+.post { background:#f8d7da; }
+.tax { background:#cce5ff; }
+</style>
+</head>
+
+<body>
+<div class="container">
+
+<h1>Payroll & Income Tax Estimator</h1>
+<p style="text-align:center">Transparent, educational payroll breakdown</p>
+
+<!-- STATE -->
+<div class="section">
+<h2>Work / Resident State</h2>
+<select id="state">
+  <option value="none">No State Income Tax</option>
+  <option value="flat5">Flat 5% State Tax (Example)</option>
+</select>
+</div>
+
+<!-- EARNINGS -->
+<div class="section">
+<h2>Earnings (Gross Pay)</h2>
+<label>Base Pay <input type="number" id="basePay" value="0"></label>
+<label>Overtime Pay <input type="number" id="overtimePay" value="0"></label>
+<label>FLSA Pay <input type="number" id="flsaPay" value="0"></label>
+<div class="total">Gross Earnings: $<span id="grossPay">0.00</span></div>
+</div>
+
+<!-- PRE-TAX -->
+<div class="section">
+<h2>Pre-Tax Deductions <span class="badge pre">Pre-Tax</span></h2>
+<label>401(a) Contribution <input type="number" id="401a" value="0"></label>
+<label>457(b) Contribution <input type="number" id="457" value="0"></label>
+<label>FPPA Pension <input type="number" id="fppa" value="0"></label>
+<label>Group Health <input type="number" id="health" value="0"></label>
+<label>Group Vision <input type="number" id="vision" value="0"></label>
+<label>Group Dental <input type="number" id="dental" value="0"></label>
+<label>Supplemental Life <input type="number" id="life" value="0"></label>
+<label>Long-Term Disability <input type="number" id="ltd" value="0"></label>
+<label>Short-Term Disability <input type="number" id="std" value="0"></label>
+<div class="total">Total Pre-Tax: $<span id="pretaxTotal">0.00</span></div>
+</div>
+
+<!-- STATE ITEMIZED -->
+<div class="section">
+<h2>State-Only Itemized Deductions <span class="badge state">State-Only</span></h2>
+<label>Uniforms <input type="number" id="uniforms" value="0"></label>
+<label>Uniform Cleaning & Laundry <input type="number" id="laundry" value="0"></label>
+<label>Cell Phone (Work Portion) <input type="number" id="cell" value="0"></label>
+</div>
+
+<!-- POST-TAX -->
+<div class="section">
+<h2>Post-Tax Deductions <span class="badge post">Post-Tax</span></h2>
+<label>Union Dues <input type="number" id="union" value="0"></label>
+<label>Retirement Loan Repayment <input type="number" id="loan" value="0"></label>
+</div>
+
+<!-- TAXES -->
+<div class="section">
+<h2>Taxes Withheld <span class="badge tax">Taxes</span></h2>
+<p>Federal Income Tax: $<span id="fedTax">0.00</span></p>
+<p>State Income Tax: $<span id="stateTax">0.00</span></p>
+<p>Medicare (1.45%): $<span id="medicare">0.00</span></p>
+<p>Unemployment: $<span id="unemployment">0.00</span></p>
+</div>
+
+<!-- NET -->
+<div class="section">
+<h2>Net Pay</h2>
+<div class="total">Take-Home Pay: $<span id="netPay">0.00</span></div>
+</div>
+
+<div class="footer">
+<p>
+Estimates only. Not tax or legal advice.<br>
+Version 1.0 — Educational Payroll Transparency Tool
+</p>
+</div>
+
+</div>
+
+<script>
+function num(id){ return parseFloat(document.getElementById(id).value) || 0; }
+
+function calculate(){
+  const gross = num("basePay")+num("overtimePay")+num("flsaPay");
+  const pretax =
+    num("401a")+num("457")+num("fppa")+num("health")+
+    num("vision")+num("dental")+num("life")+num("ltd")+num("std");
+
+  const fedTaxable = Math.max(0, gross - pretax - 13850); // standard deduction example
+  const fedTax = fedTaxable * 0.12; // simplified federal rate example
+
+  const medicare = gross * 0.0145;
+  const unemployment = gross * 0.005;
+
+  let stateTax = 0;
+  if(document.getElementById("state").value === "flat5"){
+    const stateDeductions = num("uniforms")+num("laundry")+num("cell");
+    stateTax = Math.max(0, gross - pretax - stateDeductions) * 0.05;
+  }
+
+  const postTax = num("union")+num("loan");
+  const net = gross - pretax - fedTax - stateTax - medicare - unemployment - postTax;
+
+  document.getElementById("grossPay").textContent = gross.toFixed(2);
+  document.getElementById("pretaxTotal").textContent = pretax.toFixed(2);
+  document.getElementById("fedTax").textContent = fedTax.toFixed(2);
+  document.getElementById("stateTax").textContent = stateTax.toFixed(2);
+  document.getElementById("medicare").textContent = medicare.toFixed(2);
+  document.getElementById("unemployment").textContent = unemployment.toFixed(2);
+  document.getElementById("netPay").textContent = net.toFixed(2);
+}
+
+document.querySelectorAll("input, select").forEach(el=>{
+  el.addEventListener("input", calculate);
+});
+</script>
+
+</body>
+</html>
