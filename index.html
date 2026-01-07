@@ -69,8 +69,8 @@ Transparent paycheck & tax breakdown for firefighters
 <div class="section">
 <h2>Work / Resident State</h2>
 <select id="state">
+  <option value="CO">Colorado</option>
   <option value="none">No State Income Tax</option>
-  <option value="flat5">Flat 5% State Tax (Example)</option>
 </select>
 </div>
 
@@ -100,7 +100,7 @@ Transparent paycheck & tax breakdown for firefighters
 
 <!-- STATE ITEMIZED -->
 <div class="section">
-<h2>State-Only Itemized Deductions <span class="badge state">State-Only</span></h2>
+<h2>Colorado State-Only Deductions <span class="badge state">State-Only</span></h2>
 <label>Uniforms <input type="number" id="uniforms" value="0"></label>
 <label>Uniform Cleaning & Laundry <input type="number" id="laundry" value="0"></label>
 <label>Cell Phone (Work Portion) <input type="number" id="cell" value="0"></label>
@@ -116,5 +116,101 @@ Transparent paycheck & tax breakdown for firefighters
 <!-- TAXES -->
 <div class="section">
 <h2>Taxes Withheld <span class="badge tax">Taxes</span></h2>
-<p>Federal Inco
+<p>Federal Income Tax: $<span id="fedTax">0.00</span></p>
+<p>Colorado Income Tax: $<span id="stateTax">0.00</span></p>
+<p>Medicare (1.45%): $<span id="medicare">0.00</span></p>
+<p>Unemployment: $<span id="unemployment">0.00</span></p>
+</div>
+
+<!-- NET -->
+<div class="section">
+<h2>Net Pay</h2>
+<div class="total">Take-Home Pay: $<span id="netPay">0.00</span></div>
+</div>
+
+<div class="footer">
+<p>
+Estimates only. Not tax or legal advice.<br>
+Firefighter Income Tax Estimator — Colorado Edition (Educational)<br>
+Colorado uses a flat income tax rate applied to federal taxable income.
+</p>
+</div>
+
+</div>
+
+<script>
+function num(id){ return parseFloat(document.getElementById(id).value) || 0; }
+
+function calculate(){
+  const gross =
+    num("basePay") +
+    num("overtimePay") +
+    num("flsaPay");
+
+  const pretax =
+    num("401a") +
+    num("457") +
+    num("fppa") +
+    num("health") +
+    num("vision") +
+    num("dental") +
+    num("life") +
+    num("ltd") +
+    num("std");
+
+  // Federal (simplified educational model)
+  const standardDeduction = 13850;
+  const fedTaxable = Math.max(0, gross - pretax - standardDeduction);
+  const fedTax = fedTaxable * 0.12;
+
+  // Payroll taxes
+  const medicare = gross * 0.0145;
+  const unemployment = gross * 0.005;
+
+  // State tax
+  let stateTax = 0;
+  const selectedState = document.getElementById("state").value;
+
+  if (selectedState === "CO") {
+    const stateDeductions =
+      num("uniforms") +
+      num("laundry") +
+      num("cell");
+
+    // Colorado starts with federal taxable income
+    const coloradoTaxable = Math.max(0, fedTaxable - stateDeductions);
+
+    // Colorado flat income tax (educational rate)
+    stateTax = coloradoTaxable * 0.044;
+  }
+
+  // Post-tax deductions
+  const postTax = num("union") + num("loan");
+
+  const net =
+    gross -
+    pretax -
+    fedTax -
+    stateTax -
+    medicare -
+    unemployment -
+    postTax;
+
+  document.getElementById("grossPay").textContent = gross.toFixed(2);
+  document.getElementById("pretaxTotal").textContent = pretax.toFixed(2);
+  document.getElementById("fedTax").textContent = fedTax.toFixed(2);
+  document.getElementById("stateTax").textContent = stateTax.toFixed(2);
+  document.getElementById("medicare").textContent = medicare.toFixed(2);
+  document.getElementById("unemployment").textContent = unemployment.toFixed(2);
+  document.getElementById("netPay").textContent = net.toFixed(2);
+}
+
+document.querySelectorAll("input, select").forEach(el => {
+  el.addEventListener("input", calculate);
+});
+</script>
+
+</body>
+</html>
+
 
